@@ -428,7 +428,7 @@ tr.row-na{background:#fafbfc}
   </div>
   <button class="score-pill vazio" id="score-pill" data-action="tab" data-tab="resumo" title="Ver resumo">
     <span class="num">—</span>
-    <span class="lbl">conformidade</span>
+    <span class="lbl">conformidades</span>
   </button>
   <details class="meta-more">
     <summary>Entidades e logótipos</summary>
@@ -4558,15 +4558,15 @@ function analisar(ins){
 
   MODULE_ORDER.forEach(m => {
     const x = A.modulos[m];
-    const avaliados = x.ok + x.nok;
-    x.score = avaliados ? Math.round(x.ok / avaliados * 100) : null;
+    const aplicaveis = x.total - x.na;
+    x.score = aplicaveis ? Math.round(x.ok / aplicaveis * 100) : null;
     A.totais.total += x.total;
     A.totais.ok += x.ok;
     A.totais.nok += x.nok;
     A.totais.pendente += x.pendente;
     A.totais.na += x.na;
   });
-  const av = A.totais.ok + A.totais.nok;
+  const av = A.totais.total - A.totais.na;
   A.score = av ? Math.round(A.totais.ok / av * 100) : null;
 
   const ordem = {alta:0, media:1, baixa:2, info:3};
@@ -4728,7 +4728,8 @@ function atualizarPill(){
   if(!ins || !pill) return;
   const A = analisar(ins);
   $('.num', pill).textContent = A.score == null ? '—' : A.score + '%';
-  $('.lbl', pill).textContent = A.estado.titulo;
+  $('.lbl', pill).textContent = 'conformidades';
+  pill.title = 'Ver resumo · ' + A.estado.titulo;
   pill.className = 'score-pill ' + A.estado.nivel;
   const sub = $('#brand-sub');
   if(sub) sub.textContent = (ins.meta.cliente || 'Sem cliente') + ' · RVT ' + (ins.meta.rvt || '—') + ' · ' + fmtData(ins.meta.data);

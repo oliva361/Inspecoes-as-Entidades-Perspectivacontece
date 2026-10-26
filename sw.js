@@ -1,5 +1,5 @@
 /* Service worker da app TVP. Ao alterar a app, incrementar CACHE_VERSION. */
-const CACHE_VERSION = 'tvp-inspecoes-v1';
+const CACHE_VERSION = 'tvp-inspecoes-v2';
 const APP_SHELL = [
   './',
   './index.html',
