@@ -225,6 +225,10 @@ tr.row-na{background:#fafbfc}
 .verdict .eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
 .verdict h2{font-size:21px;margin-top:2px}
 .verdict p{color:#475569;font-size:13px;margin-top:2px}
+.verdict-legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.verdict-legend span{font-size:9.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.verdict-legend span em{font-style:normal;font-weight:600;opacity:.75;margin-left:3px}
+.verdict-legend span.on{color:var(--ink);border-color:#94a3b8;background:#eef2f7;font-weight:800}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 15px;box-shadow:var(--shadow)}
 .kpi .n{font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
@@ -4569,21 +4573,17 @@ function analisar(ins){
   A.grav = {alta:0, media:0, baixa:0, info:0};
   A.ncs.forEach(n => { A.grav[n.grav] = (A.grav[n.grav] || 0) + 1; });
 
+  const pendenteTxt = A.totais.pendente ? ' ' + plural(A.totais.pendente,'item por verificar','itens por verificar') + '.' : '';
   if(!A.totais.total){
     A.estado = {nivel:'vazio', titulo:'Sem dados', detalhe:'Ainda não foram registados equipamentos nesta inspeção.'};
-  }else if(A.grav.alta){
-    const totalNC = A.ncs.length;
-    const graves = plural(A.grav.alta,'não conformidade grave','não conformidades graves');
-    const detalhe = totalNC === A.grav.alta
-      ? 'Existe' + (A.grav.alta === 1 ? '' : 'm') + ' ' + graves + ' que exige' + (A.grav.alta === 1 ? '' : 'm') + ' intervenção prioritária.'
-      : 'Existem ' + plural(totalNC,'não conformidade','não conformidades') + ', das quais ' + A.grav.alta + ' graves, que exigem intervenção prioritária.';
-    A.estado = {nivel:'nao-conforme', titulo:'Não conforme', detalhe:detalhe};
-  }else if(A.grav.media || A.grav.baixa){
-    A.estado = {nivel:'com-nc', titulo:'Com pontos a melhorar', detalhe:'Foram registadas ' + plural(A.grav.media + A.grav.baixa,'não conformidade','não conformidades') + '.'};
-  }else if(A.totais.pendente){
-    A.estado = {nivel:'incompleto', titulo:'Com pontos a melhorar', detalhe:plural(A.totais.pendente,'item ainda por verificar','itens ainda por verificar') + '.'};
+  }else if(A.score == null){
+    A.estado = {nivel:'vazio', titulo:'Sem dados', detalhe:'Não existem itens aplicáveis para classificar.'};
+  }else if(A.score >= 80){
+    A.estado = {nivel:'conforme', titulo:'Conforme', detalhe:A.score + '% de conformidades (80% ou mais).' + pendenteTxt};
+  }else if(A.score >= 50){
+    A.estado = {nivel:'com-nc', titulo:'Com pontos a melhorar', detalhe:A.score + '% de conformidades (entre 50% e 79%).' + pendenteTxt};
   }else{
-    A.estado = {nivel:'conforme', titulo:'Conforme', detalhe:'Todos os itens avaliados se encontram conformes.'};
+    A.estado = {nivel:'nao-conforme', titulo:'Não conforme', detalhe:A.score + '% de conformidades (abaixo de 50%).' + pendenteTxt};
   }
   return A;
 }
@@ -4596,6 +4596,16 @@ function badge(status){
 function badgeGrav(g){
   const map = {alta:'Alta', media:'Média', baixa:'Baixa', info:'Info'};
   return '<span class="badge ' + g + '">' + (map[g] || g) + '</span>';
+}
+function legendaAvaliacao(nivel, classe){
+  const itens = [
+    {n:'conforme', l:'Conforme', f:'≥ 80%'},
+    {n:'com-nc', l:'Com pontos a melhorar', f:'50–79%'},
+    {n:'nao-conforme', l:'Não conforme', f:'&lt; 50%'}
+  ];
+  return '<div class="' + classe + '">' + itens.map(x =>
+    '<span' + (x.n === nivel ? ' class="on"' : '') + '>' + x.l + ' <em>' + x.f + '</em></span>'
+  ).join('') + '</div>';
 }
 function segEstado(v, field){
   return '<div class="seg">' +
@@ -5036,7 +5046,7 @@ function renderResumo(){
   box.innerHTML =
     '<div class="verdict ' + A.estado.nivel + '">' +
       '<div class="verdict-score">' + (A.score == null ? '—' : A.score + '%') + '</div>' +
-      '<div><span class="eyebrow">Apreciação global</span><h2>' + A.estado.titulo + '</h2><p>' + esc(A.estado.detalhe) + '</p></div>' +
+      '<div><span class="eyebrow">Apreciação global</span><h2>' + A.estado.titulo + '</h2><p>' + esc(A.estado.detalhe) + '</p>' + legendaAvaliacao(A.estado.nivel, 'verdict-legend') + '</div>' +
       '<button type="button" class="btn primary" data-action="relatorio">Abrir relatório</button>' +
     '</div>' +
     '<div class="kpis">' +
@@ -5088,6 +5098,10 @@ const REPORT_CSS = `
 .rep-score{font-size:21pt;font-weight:800;min-width:66px;letter-spacing:-.03em}
 .rep-verdict h2{margin:0;font-size:12pt}
 .rep-verdict p{margin:2px 0 0;font-size:8.5pt;color:#4b5b6e}
+.rep-legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.rep-legend span{font-size:6.8pt;font-weight:600;color:#64748b;border:1px solid #e2e8f0;border-radius:999px;padding:1px 5px;white-space:nowrap}
+.rep-legend span em{font-style:normal;opacity:.8;margin-left:2px}
+.rep-legend span.on{color:#0b2239;border-color:#94a3b8;background:#eef2f7;font-weight:800}
 .rep-h2{font-size:10.5pt;margin:15px 0 6px;padding-bottom:4px;border-bottom:1px solid #dbe3ee;color:#0b2239;page-break-after:avoid}
 table.rep-table{width:100%;border-collapse:collapse;font-size:8pt}
 .rep-table th{background:#f1f5f9;text-align:left;padding:5px 6px;border:1px solid #dbe3ee;font-size:7pt;text-transform:uppercase;letter-spacing:.04em;color:#52627a}
@@ -5208,7 +5222,7 @@ function construirRelatorio(ins){
     '</div>' +
     '<div class="rep-verdict ' + A.estado.nivel + '">' +
       '<div class="rep-score">' + (A.score == null ? '—' : A.score + '%') + '</div>' +
-      '<div><h2>' + A.estado.titulo + '</h2><p>' + esc(A.estado.detalhe) + '</p></div>' +
+      '<div><h2>' + A.estado.titulo + '</h2><p>' + esc(A.estado.detalhe) + '</p>' + legendaAvaliacao(A.estado.nivel, 'rep-legend') + '</div>' +
     '</div>' +
     '<h2 class="rep-h2">1. Resumo por módulo</h2>' +
     '<table class="rep-table"><thead><tr><th>Módulo</th><th class="num">Itens</th><th class="num">Conformes</th><th class="num">NC</th><th class="num">Por verificar</th><th class="num">Conformidade</th></tr></thead><tbody>' + mods + '</tbody></table>' +
