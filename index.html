@@ -98,9 +98,6 @@ a{color:var(--brand-2)}
 .score-pill{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;min-width:118px;padding:7px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);cursor:pointer}
 .score-pill .num{font-size:20px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
 .score-pill .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;text-align:right}
-.score-pill.conforme{border-color:#bbe3c8;background:var(--ok-bg)} .score-pill.conforme .num{color:var(--ok)}
-.score-pill.com-nc,.score-pill.nao-conforme{border-color:#f3c6c6;background:var(--bad-bg)} .score-pill.com-nc .num,.score-pill.nao-conforme .num{color:var(--bad)}
-.score-pill.incompleto{border-color:#f3d99b;background:var(--warn-bg)} .score-pill.incompleto .num{color:var(--warn)}
 .score-pill.vazio .num{color:var(--muted)}
 
 /* ---------- tabs ---------- */
@@ -225,9 +222,6 @@ tr.row-na{background:#fafbfc}
 .verdict.incompleto{border-left-color:var(--warn)}
 .verdict.vazio{border-left-color:var(--line)}
 .verdict-score{font-size:34px;font-weight:800;letter-spacing:-.04em;line-height:1;min-width:92px}
-.verdict.conforme .verdict-score{color:var(--ok)}
-.verdict.com-nc .verdict-score,.verdict.nao-conforme .verdict-score{color:var(--bad)}
-.verdict.incompleto .verdict-score{color:var(--warn)}
 .verdict .eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
 .verdict h2{font-size:21px;margin-top:2px}
 .verdict p{color:#475569;font-size:13px;margin-top:2px}
@@ -4585,9 +4579,9 @@ function analisar(ins){
       : 'Existem ' + plural(totalNC,'não conformidade','não conformidades') + ', das quais ' + A.grav.alta + ' graves, que exigem intervenção prioritária.';
     A.estado = {nivel:'nao-conforme', titulo:'Não conforme', detalhe:detalhe};
   }else if(A.grav.media || A.grav.baixa){
-    A.estado = {nivel:'com-nc', titulo:'Com não conformidades', detalhe:'Foram registadas ' + plural(A.grav.media + A.grav.baixa,'não conformidade','não conformidades') + '.'};
+    A.estado = {nivel:'com-nc', titulo:'Com pontos a melhorar', detalhe:'Foram registadas ' + plural(A.grav.media + A.grav.baixa,'não conformidade','não conformidades') + '.'};
   }else if(A.totais.pendente){
-    A.estado = {nivel:'incompleto', titulo:'Incompleto', detalhe:plural(A.totais.pendente,'item ainda por verificar','itens ainda por verificar') + '.'};
+    A.estado = {nivel:'incompleto', titulo:'Com pontos a melhorar', detalhe:plural(A.totais.pendente,'item ainda por verificar','itens ainda por verificar') + '.'};
   }else{
     A.estado = {nivel:'conforme', titulo:'Conforme', detalhe:'Todos os itens avaliados se encontram conformes.'};
   }
@@ -4730,7 +4724,7 @@ function atualizarPill(){
   $('.num', pill).textContent = A.score == null ? '—' : A.score + '%';
   $('.lbl', pill).textContent = 'conformidades';
   pill.title = 'Ver resumo · ' + A.estado.titulo;
-  pill.className = 'score-pill ' + A.estado.nivel;
+  pill.className = 'score-pill' + (A.score == null ? ' vazio' : '');
   const sub = $('#brand-sub');
   if(sub) sub.textContent = (ins.meta.cliente || 'Sem cliente') + ' · RVT ' + (ins.meta.rvt || '—') + ' · ' + fmtData(ins.meta.data);
 }
@@ -5092,9 +5086,6 @@ const REPORT_CSS = `
 .rep-verdict.nao-conforme,.rep-verdict.com-nc{border-left-color:#b91c1c;background:#fff5f5}
 .rep-verdict.incompleto{border-left-color:#b45309;background:#fffbf0}
 .rep-score{font-size:21pt;font-weight:800;min-width:66px;letter-spacing:-.03em}
-.rep-verdict.conforme .rep-score{color:#15803d}
-.rep-verdict.nao-conforme .rep-score,.rep-verdict.com-nc .rep-score{color:#b91c1c}
-.rep-verdict.incompleto .rep-score{color:#b45309}
 .rep-verdict h2{margin:0;font-size:12pt}
 .rep-verdict p{margin:2px 0 0;font-size:8.5pt;color:#4b5b6e}
 .rep-h2{font-size:10.5pt;margin:15px 0 6px;padding-bottom:4px;border-bottom:1px solid #dbe3ee;color:#0b2239;page-break-after:avoid}
